@@ -16,8 +16,9 @@ namespace Hangfire.API.Controllers
             _videoDownloader = videoDownloader;
         }
         [HttpPost]
-        public async Task<IActionResult> QueueExtraction(VideoExractorRequest request) {
-            _videoDownloader.EnqueueVideoDownload(request.VideoUrl);
+        public async Task<IActionResult> QueueExtraction(VideoExtractorRequest request)
+        {
+            _videoDownloader.EnqueueVideoDownload(request.Id, request.VideoUrl);
             return Ok("Hi mom!");
         }
     }
