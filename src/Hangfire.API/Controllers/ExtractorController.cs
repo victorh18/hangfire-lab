@@ -18,8 +18,10 @@ namespace Hangfire.API.Controllers
         [HttpPost]
         public async Task<IActionResult> QueueExtraction(VideoExtractorRequest request)
         {
-            _videoDownloader.EnqueueVideoDownload(request.Id, request.VideoUrl);
+            _videoDownloader.EnqueueVideoDownload(DateTime.Now.ToString("yyyyMMdd_hhmmss"), request.VideoUrl);
             return Ok("Hi mom!");
         }
+
+
     }
 }

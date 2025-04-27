@@ -32,10 +32,15 @@ public class VideoDownloader : IVideoDownloader
         argumentList.Add($"-o {id}.mp4");
 
         downloadProcess.StartInfo.Arguments = string.Join(' ', argumentList);
+        downloadProcess.StartInfo.UseShellExecute = false;
+        downloadProcess.StartInfo.RedirectStandardOutput = true;
+        downloadProcess.OutputDataReceived += DownloadProcessOutputHandler;
 
         Console.WriteLine($"Calling process: {downloadProcess.StartInfo.FileName} {downloadProcess.StartInfo.Arguments}");
 
         downloadProcess.Start();
+
+        downloadProcess.BeginOutputReadLine();
 
 
         downloadProcess.WaitForExit();
@@ -61,5 +66,47 @@ public class VideoDownloader : IVideoDownloader
 
         processingProcess.Start();
         processingProcess.WaitForExit();
+    }
+
+    public static (string description, int percentage) GetProgressPercentage(string text)
+    {
+        if (text.Contains("Downloading m3u8 information"))
+        {
+            return ("Downloading...", 10);
+        }
+        else if (text.Contains("Downloading m3u8 manifest"))
+        {
+            return ("Downloading...", 20);
+        }
+        else if (text.Contains("[download]"))
+        {
+            var parts = text.Split(' ');
+            var possiblePercentage = parts[1].Replace("%", "");
+
+            if (int.TryParse(possiblePercentage, out int actualPercentage))
+            {
+                if (actualPercentage <= 25)
+                {
+                    return ("Downloading...", 25);
+                }
+                else
+                {
+                    return ("Downloading...", actualPercentage);
+                }
+            }
+            else
+            {
+                return ("Downloading...", 25);
+            }
+        }
+
+        return ("Downloading...", 50);
+
+    }
+
+    public void DownloadProcessOutputHandler(object downloadingProcess, DataReceivedEventArgs outline)
+    {
+        var progressReport = GetProgressPercentage(outline.Data ?? "");
+        Console.WriteLine($"{progressReport.description} {progressReport.percentage}");
     }
 }
