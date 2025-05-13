@@ -68,18 +68,20 @@ public class VideoDownloader : IVideoDownloader
 
         processingProcess.Start();
         processingProcess.WaitForExit();
+
+        // For the processing progress, get the video fps, and then the duration, and use that to determine the progress, also consider using the minimized version (-progress - -nostats) to make it easier to process 
     }
 
     public (string description, int percentage) GetProgressPercentage(string text)
     {
-        var downloadBasePercentage = fragmentDownloaded == 1 ? 10 : 50;
+
         if (text.Contains("Downloading m3u8 information"))
         {
             progress = 5;
         }
         else if (text.Contains("Downloading m3u8 manifest"))
         {
-            progress = downloadBasePercentage;
+            progress = 9;
         }
         else if (text.Contains("[download]") && !text.Contains("(frag 0"))
         {
@@ -87,12 +89,13 @@ public class VideoDownloader : IVideoDownloader
             {
                 fragmentDownloaded++;
             }
+            var downloadBasePercentage = fragmentDownloaded == 1 ? 10 : 50;
             var parts = text.Split(" ");
             var possiblePercentage = parts?.FirstOrDefault(s => s.Contains("%"))?.Replace("%", "");
 
             if (decimal.TryParse(possiblePercentage, out decimal actualPercentage))
             {
-                progress = downloadBasePercentage + (int)Math.Floor(actualPercentage / 2);
+                progress = Math.Max(progress, downloadBasePercentage + (int)Math.Floor(actualPercentage / 2));
             }
             else
             {
