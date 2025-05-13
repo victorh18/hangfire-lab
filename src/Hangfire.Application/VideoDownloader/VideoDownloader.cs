@@ -11,6 +11,8 @@ public interface IVideoDownloader
 }
 public class VideoDownloader : IVideoDownloader
 {
+    private int fragmentDownloaded = 0;
+    private int progress = 0;
     public void EnqueueVideoDownload(string id, string videoUrl)
     {
         var downloadJobId = BackgroundJob.Enqueue(() =>
@@ -56,8 +58,8 @@ public class VideoDownloader : IVideoDownloader
 
         processingProcess.StartInfo.FileName = "ffmpeg";
         argumentList.Add($@"-i /Users/Videlarosa/Projects/personal/hangfire-lab/src/Hangfire.API/{id}.mp4");
-        argumentList.Add(@"-ss 00:00:46");
-        argumentList.Add(@"-to 00:00:48");
+        argumentList.Add(@"-ss 00:00:05");
+        argumentList.Add(@"-to 00:00:10");
         argumentList.Add($@"{id}.gif");
 
         processingProcess.StartInfo.Arguments = string.Join(' ', argumentList);
@@ -68,39 +70,37 @@ public class VideoDownloader : IVideoDownloader
         processingProcess.WaitForExit();
     }
 
-    public static (string description, int percentage) GetProgressPercentage(string text)
+    public (string description, int percentage) GetProgressPercentage(string text)
     {
+        var downloadBasePercentage = fragmentDownloaded == 1 ? 10 : 50;
         if (text.Contains("Downloading m3u8 information"))
         {
-            return ("Downloading...", 10);
+            progress = 5;
         }
         else if (text.Contains("Downloading m3u8 manifest"))
         {
-            return ("Downloading...", 20);
+            progress = downloadBasePercentage;
         }
-        else if (text.Contains("[download]"))
+        else if (text.Contains("[download]") && !text.Contains("(frag 0"))
         {
-            var parts = text.Split(' ');
-            var possiblePercentage = parts[1].Replace("%", "");
-
-            if (int.TryParse(possiblePercentage, out int actualPercentage))
+            if (text.Contains("Destination:"))
             {
-                if (actualPercentage <= 25)
-                {
-                    return ("Downloading...", 25);
-                }
-                else
-                {
-                    return ("Downloading...", actualPercentage);
-                }
+                fragmentDownloaded++;
+            }
+            var parts = text.Split(" ");
+            var possiblePercentage = parts?.FirstOrDefault(s => s.Contains("%"))?.Replace("%", "");
+
+            if (decimal.TryParse(possiblePercentage, out decimal actualPercentage))
+            {
+                progress = downloadBasePercentage + (int)Math.Floor(actualPercentage / 2);
             }
             else
             {
-                return ("Downloading...", 25);
+                return ("Weird text: " + text, 8);
             }
         }
 
-        return ("Downloading...", 50);
+        return ("Downloading...", progress);
 
     }
 
