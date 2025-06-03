@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  mongo-primary:
+    image: mongo
+    container_name: mongo-primary
+    command: ["--replSet", "rs0", "--auth", "--keyFile", "/etc/mongo-keyfile"]
+    ports: 
+      - "27017:27017"
+    volumes:
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
+    networks: 
+      - mongo-cluster
+
+  mongo-secondary:
+    image: mongo
+    container_name: mongo-secondary
+    command: ["--replSet", "rs0", "--auth", "--keyFile", "/etc/mongo-keyfile"]
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
+    networks:
+      - mongo-cluster
+
+  mongo-arbiter:
+    image: mongo
+    container_name: mongo-arbiter
+    command: ["--replSet", "rs0", "--auth", "--keyFile", "/etc/mongo-keyfile"]
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
+    networks:
+      - mongo-cluster
+
+networks:
+  mongo-cluster:
+    driver: bridge
