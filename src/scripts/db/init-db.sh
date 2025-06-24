@@ -19,3 +19,5 @@ cat docker-compose-auth.yml > docker-compose.yml
 
 docker-compose up -d
 
+## SOMETIMES, WHEN RESTARTING THE CLUSTER, IT WORKS, SOMETIMES, IT DOES NOT
+## FOR THIS REASON THIS SCRIPT IS ILLUSTRATORY ONLY

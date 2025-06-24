@@ -25,7 +25,6 @@ public class VideoDownloader : IVideoDownloader
         );
 
         BackgroundJob.ContinueJobWith(downloadJobId, () => ProcessDownload(id));
-        // BackgroundJob.Enqueue(() => ProcessDownload(id));
     }
 
     public void DownloadProcess(string id, string videoUrl)
@@ -36,6 +35,7 @@ public class VideoDownloader : IVideoDownloader
 
         downloadProcess.StartInfo.FileName = "yt-dlp";
         argumentList.Add(videoUrl);
+        argumentList.Add("--remux-video mp4");
         argumentList.Add($"-o {id}.mp4");
 
         downloadProcess.StartInfo.Arguments = string.Join(' ', argumentList);
@@ -60,8 +60,10 @@ public class VideoDownloader : IVideoDownloader
         Process processingProcess = new();
         List<string> argumentList = new();
 
+        var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : Path.Combine("Users", "Videlarosa", "Projects", "personal");
+
         processingProcess.StartInfo.FileName = "ffmpeg";
-        argumentList.Add($@"-i /Users/Videlarosa/Projects/personal/hangfire-lab/src/Hangfire.API/{id}.mp4");
+        argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{id}.mp4");
         argumentList.Add(@"-ss 00:00:05");
         argumentList.Add(@"-to 00:00:10");
         argumentList.Add(@"-progress - -nostats");

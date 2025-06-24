@@ -31,3 +31,4 @@ docker exec -i mongo-primary mongosh --eval "db = db.getSiblingDB('testdb'); db.
 # mongosh mongodb://root:someSecret@mongo-primary:27017,mongo-secondary:27018,mongo-arbiter:27019/admin?replicaSet=rs0
 
 ## SOMETIMES, WHEN RESTARTING THE CLUSTER, IT WORKS, SOMETIMES, IT DOES NOT
+## FOR THIS REASON THIS SCRIPT IS ILLUSTRATORY ONLY

@@ -54,3 +54,4 @@ TestResult.xml
 nunit-*.xml
 *.gif
 *.mp4
+**/mongo-keyfile
