@@ -1,7 +1,11 @@
+using System.Net.WebSockets;
+using System.Text;
+
 namespace Hangfire.Worker;
 
 public class Worker : BackgroundService
 {
+
     private readonly ILogger<Worker> _logger;
 
     public Worker(ILogger<Worker> logger)
@@ -17,6 +21,7 @@ public class Worker : BackgroundService
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             }
+
             await Task.Delay(1000, stoppingToken);
         }
     }

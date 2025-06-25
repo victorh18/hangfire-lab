@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
+using Hangfire.Application.Report;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,8 +39,15 @@ builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IVideoDownloader, VideoDownloader>();
+builder.Services.AddSingleton<ReportWebSocketProvider>();
 
 var app = builder.Build();
+
+var webSocketOptions = new WebSocketOptions {
+    KeepAliveInterval = TimeSpan.FromMinutes(2)
+};
+
+app.UseWebSockets(webSocketOptions);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

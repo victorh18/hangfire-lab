@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net.WebSockets;
 using System.Text;
 
 namespace Hangfire.Application.VideoDownloader;
@@ -11,6 +12,9 @@ public interface IVideoDownloader
 }
 public class VideoDownloader : IVideoDownloader
 {
+    
+    private readonly ClientWebSocket _webSocketClient = new();
+    
     private int fragmentDownloaded = 0;
     private int progress = 0;
 
@@ -30,6 +34,12 @@ public class VideoDownloader : IVideoDownloader
     public void DownloadProcess(string id, string videoUrl)
     {
         Console.WriteLine($"Enqueueing video with id: {id} url: {videoUrl}");
+
+        Console.WriteLine("Connecting to web socket...");
+        Uri _webSocketUrl = new("wss://localhost:7048/api/report/worker-reporter-download");
+        Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
+        Console.WriteLine("Connected!");
+
         Process downloadProcess = new();
         List<string> argumentList = new();
 
@@ -50,12 +60,18 @@ public class VideoDownloader : IVideoDownloader
         downloadProcess.BeginOutputReadLine();
 
         downloadProcess.WaitForExit();
+        Task.WaitAll([_webSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None)]);
 
     }
 
     public void ProcessDownload(string id)
     {
         Console.WriteLine($"Processing video with id: {id}");
+
+        Console.WriteLine("Connecting to web socket...");
+        Uri _webSocketUrl = new("wss://localhost:7048/api/report/worker-reporter-process");
+        Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
+        Console.WriteLine("Connected!");
 
         Process processingProcess = new();
         List<string> argumentList = new();
@@ -84,13 +100,15 @@ public class VideoDownloader : IVideoDownloader
         processingProcess.BeginOutputReadLine();
         processingProcess.BeginErrorReadLine();
         processingProcess.WaitForExit();
+        Task.WaitAll([_webSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None)]);
+        
 
         // For the processing progress, get the video fps, and then the duration, and use that to determine the progress, also consider using the minimized version (-progress - -nostats) to make it easier to process 
     }
 
     public (string description, int percentage) GetProgressPercentage(string text)
     {
-
+        
         if (text.Contains("Downloading m3u8 information"))
         {
             progress = 5;
@@ -119,6 +137,9 @@ public class VideoDownloader : IVideoDownloader
             }
         }
 
+        var messageToWs = Encoding.UTF8.GetBytes($"Downloading: {progress}");
+        _webSocketClient.SendAsync(messageToWs, WebSocketMessageType.Text, true, CancellationToken.None);
+
         return ("Downloading...", progress);
 
     }
@@ -137,6 +158,9 @@ public class VideoDownloader : IVideoDownloader
             var currentFrame = decimal.Parse(text.Split("=")[1]);
             processProgress = (int)(currentFrame / totalFramesToProcess * 100);
         }
+
+        var messageToWs = Encoding.UTF8.GetBytes($"Processing: {processProgress}");
+        _webSocketClient.SendAsync(messageToWs, WebSocketMessageType.Text, true, CancellationToken.None);
 
         return ("Processing", processProgress);
     }
