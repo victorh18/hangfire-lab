@@ -12,9 +12,9 @@ public interface IVideoDownloader
 }
 public class VideoDownloader : IVideoDownloader
 {
-    
+
     private readonly ClientWebSocket _webSocketClient = new();
-    
+
     private int fragmentDownloaded = 0;
     private int progress = 0;
 
@@ -76,7 +76,7 @@ public class VideoDownloader : IVideoDownloader
         Process processingProcess = new();
         List<string> argumentList = new();
 
-        var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : Path.Combine("Users", "Videlarosa", "Projects", "personal");
+        var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : @"/" + Path.Combine("Users", "Videlarosa", "Projects", "personal");
 
         processingProcess.StartInfo.FileName = "ffmpeg";
         argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{id}.mp4");
@@ -101,14 +101,14 @@ public class VideoDownloader : IVideoDownloader
         processingProcess.BeginErrorReadLine();
         processingProcess.WaitForExit();
         Task.WaitAll([_webSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None)]);
-        
+
 
         // For the processing progress, get the video fps, and then the duration, and use that to determine the progress, also consider using the minimized version (-progress - -nostats) to make it easier to process 
     }
 
     public (string description, int percentage) GetProgressPercentage(string text)
     {
-        
+
         if (text.Contains("Downloading m3u8 information"))
         {
             progress = 5;
