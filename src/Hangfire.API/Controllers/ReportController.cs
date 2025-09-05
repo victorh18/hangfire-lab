@@ -12,7 +12,6 @@ namespace Hangfire.API.Controllers
     {
         private readonly ReportWebSocketProvider _webSocketProvider;
 
-        //public event FrontendReportHandler FrontendReported;
         public Dictionary<string, EventHandler> events = new();
 
         public ReportController(ReportWebSocketProvider webSocketProvider)
@@ -26,7 +25,7 @@ namespace Hangfire.API.Controllers
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                // _webSocketProvider.events.Add(id, (sender, file) => { Console.WriteLine("Download progress from event"); });
+
                 _webSocketProvider.events.Add(id, HandleFrontendWebSocket(id, webSocket));
                 while (true) { }
             }
@@ -85,15 +84,15 @@ namespace Hangfire.API.Controllers
             _webSocketProvider.webSockets.Remove(id);
         }
 
-        private async Task KeepWebSocketOpen(string id, WebSocket webSocket)
-        {
-            // BEWARE WITH THIS BECAUSE, UNLESS YOU KEEP READING THE MESSAGES, YOU WILL NOT GET THE END 
-            // OF CONNECTION FRAME, AND WILL NEVER BE ABLE TO DETECT THE CLOSURE OF THE WS
-            while ((webSocket.State != WebSocketState.CloseReceived)) { }
+        // private async Task KeepWebSocketOpen(string id, WebSocket webSocket)
+        // {
+        //     // BEWARE WITH THIS BECAUSE, UNLESS YOU KEEP READING THE MESSAGES, YOU WILL NOT GET THE END 
+        //     // OF CONNECTION FRAME, AND WILL NEVER BE ABLE TO DETECT THE CLOSURE OF THE WS
+        //     while ((webSocket.State != WebSocketState.CloseReceived)) { }
 
-            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", CancellationToken.None);
-            _webSocketProvider.webSockets.Remove(id);
-        }
+        //     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", CancellationToken.None);
+        //     _webSocketProvider.webSockets.Remove(id);
+        // }
 
         private EventHandler<string> HandleFrontendWebSocket(string id, WebSocket frontendWebSocket)
         {

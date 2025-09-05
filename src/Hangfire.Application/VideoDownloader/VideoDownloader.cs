@@ -8,7 +8,7 @@ namespace Hangfire.Application.VideoDownloader;
 
 public interface IVideoDownloader
 {
-    public void EnqueueVideoDownload(string id, string videoUrl);
+    public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime);
 }
 public class VideoDownloader : IVideoDownloader
 {
@@ -22,13 +22,13 @@ public class VideoDownloader : IVideoDownloader
     private int processProgress = 0;
     private int secondsToProcess = 0;
     private decimal totalFramesToProcess = 0;
-    public void EnqueueVideoDownload(string id, string videoUrl)
+    public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime)
     {
         var downloadJobId = BackgroundJob.Enqueue(() =>
             DownloadProcess(id, videoUrl)
         );
 
-        BackgroundJob.ContinueJobWith(downloadJobId, () => ProcessDownload(id));
+        BackgroundJob.ContinueJobWith(downloadJobId, () => ProcessDownload(id, startTime, endTime));
     }
 
     public void DownloadProcess(string id, string videoUrl)
@@ -64,12 +64,12 @@ public class VideoDownloader : IVideoDownloader
 
     }
 
-    public void ProcessDownload(string id)
+    public void ProcessDownload(string id, string startTime, string endTime)
     {
         Console.WriteLine($"Processing video with id: {id}");
 
         Console.WriteLine("Connecting to web socket...");
-        Uri _webSocketUrl = new("wss://localhost:7048/api/report/worker-reporter-process");
+        Uri _webSocketUrl = new("wss://localhost:7048/api/report/worker-reporter-download");
         Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
         Console.WriteLine("Connected!");
 
@@ -80,8 +80,8 @@ public class VideoDownloader : IVideoDownloader
 
         processingProcess.StartInfo.FileName = "ffmpeg";
         argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{id}.mp4");
-        argumentList.Add(@"-ss 00:00:05");
-        argumentList.Add(@"-to 00:00:10");
+        argumentList.Add(@$"-ss {startTime}");
+        argumentList.Add(@$"-to {endTime}");
         argumentList.Add(@"-progress - -nostats");
         secondsToProcess = 5;
         argumentList.Add($@"{id}.gif");

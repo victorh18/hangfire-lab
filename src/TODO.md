@@ -1,0 +1,12 @@
+# TODO
+- [X] Report processing progress
+- [X] Move time parameters to client request
+- [X] Return file in separate endpoint
+- [ ] Create a frontend
+    - [ ] Vanilla HTML/CSS/JS
+    - [ ] Use YouTube's iFrame
+    - [ ] Have inputs for start and end time
+    - [ ] Show a loading bar with the progress
+        - [ ] Bonus Points if it can change color on whether it's reporting download or processing
+    - [ ] When ready show a download now button
+    - [ ] Show resulting gif in page

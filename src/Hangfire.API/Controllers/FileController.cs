@@ -1,0 +1,36 @@
+using Hangfire.Application.FileHandling;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Hangfire.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class FileController : ControllerBase
+    {
+        private readonly IFileHandling _fileHandling;
+        public FileController(IFileHandling fileHandling)
+        {
+            _fileHandling = fileHandling;
+        }
+        [Route("{id}")]
+        public async Task<IActionResult> GetFile([FromRoute] string id)
+        {
+            try
+            {
+                var fileBytes = await _fileHandling.GetFileFromId(id);
+
+                // Return the file with appropriate content type
+                return File(fileBytes, "image/gif", $"{id}.gif");
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound($"File with id '{id}' not found.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving file: {ex.Message}");
+            }
+        }
+    }
+}

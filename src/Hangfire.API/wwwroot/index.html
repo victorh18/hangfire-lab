@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Extractor</title>
+</head>
+
+<body>
+    <header>
+        <h1>Meme extractor PoC</h1>
+    </header>
+    <main>
+        <h2>Please paste the video from which you want to extract your meme</h2>
+        <div id="conVideoUrlControls" style="display: flex; flex-direction: column;">
+            <label for="txtVideoUrl">Video URL:</label>
+            <input id="txtVideoUrl" type="text" value="https://www.youtube.com/watch?v=QG64mYP0d7o">
+        </div>
+        <div>
+            <div id="player"></div>
+        </div>
+        <div id="conTimeframeControls" style="display: flex; flex-direction: row; gap: 10px; align-items: center;">
+            <div style="display: flex; flex-direction: column;">
+                <label for="txtStartTime">Starting second:</label>
+                <input id="txtStartTime" type="number" value="147">
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <label for="txtEndTime">Ending second:</label>
+                <input id="txtEndTime" type="number" value="152">
+            </div>
+            <div>
+                <button id="btnProcess">Process</button>
+            </div>
+        </div>
+        <div>
+            <h4>Result:</h4>
+            <div id="conResult">
+
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Your Website</p>
+    </footer>
+    <script src="./script.js"></script>
+    <script src="./initializeYoutube.js"></script>
+</body>
+
+</html>

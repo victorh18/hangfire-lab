@@ -18,10 +18,9 @@ namespace Hangfire.API.Controllers
         [HttpPost]
         public async Task<IActionResult> QueueExtraction(VideoExtractorRequest request)
         {
-            _videoDownloader.EnqueueVideoDownload(DateTime.Now.ToString("yyyyMMdd_hhmmss"), request.VideoUrl);
-            return Ok("Hi mom!");
+            var id = DateTime.Now.ToString("yyyyMMdd_hhmmss");
+            _videoDownloader.EnqueueVideoDownload(id, request.VideoUrl, request.TimeStamps.StartTime, request.TimeStamps.EndTime);
+            return Ok($"{id}");
         }
-
-
     }
 }
