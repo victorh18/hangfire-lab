@@ -10,3 +10,5 @@
         - [ ] Bonus Points if it can change color on whether it's reporting download or processing
     - [ ] When ready show a download now button
     - [ ] Show resulting gif in page
+    - [ ] Consider having a "selection mode" where the user can select on the overlay the time
+        - [ ] Have some buttons to fine tune the second on each control that updates automatically on the overlay
