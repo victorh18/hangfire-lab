@@ -21,7 +21,7 @@ namespace Hangfire.API.Controllers
                 var fileBytes = await _fileHandling.GetFileFromId(id);
 
                 // Return the file with appropriate content type
-                return File(fileBytes, "image/gif", $"{id}.gif");
+                return File(fileBytes, "audio/mp3", $"{id}.mp3");
             }
             catch (FileNotFoundException)
             {

@@ -12,7 +12,7 @@ public class FileHandling : IFileHandling
     public async Task<byte[]> GetFileFromId(string id)
     {
         const string BASE_PATH = "/Users/Videlarosa/Projects/personal/hangfire-lab/src/Hangfire.Worker/";
-        var filePath = Path.Combine(BASE_PATH, $"{id}.gif");
+        var filePath = Path.Combine(BASE_PATH, $"{id}_audio.mp3");
 
         return await File.ReadAllBytesAsync(filePath);
     }

@@ -45,8 +45,8 @@ public class VideoDownloader : IVideoDownloader
 
         downloadProcess.StartInfo.FileName = "yt-dlp";
         argumentList.Add(videoUrl);
-        argumentList.Add("--remux-video mp4");
-        argumentList.Add($"-o {id}.mp4");
+        // argumentList.AddRange(GetGIFDownloadArgs(id));
+        argumentList.AddRange(GetAudioDownloadArgs(id));
 
         downloadProcess.StartInfo.Arguments = string.Join(' ', argumentList);
         downloadProcess.StartInfo.UseShellExecute = false;
@@ -78,13 +78,13 @@ public class VideoDownloader : IVideoDownloader
 
         var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : @"/" + Path.Combine("Users", "Videlarosa", "Projects", "personal");
 
-        processingProcess.StartInfo.FileName = "ffmpeg";
-        argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{id}.mp4");
-        argumentList.Add(@$"-ss {startTime}");
-        argumentList.Add(@$"-to {endTime}");
-        argumentList.Add(@"-progress - -nostats");
         secondsToProcess = 5;
-        argumentList.Add($@"{id}.gif");
+
+        processingProcess.StartInfo.FileName = "ffmpeg";
+        argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{id}.mp3");
+
+        // argumentList.AddRange(GetGIFProcessingArgs(id, startTime, endTime));
+        argumentList.AddRange(GetAudioProcessingArgs(id, startTime, endTime));
 
         processingProcess.StartInfo.Arguments = string.Join(' ', argumentList);
 
@@ -159,6 +159,11 @@ public class VideoDownloader : IVideoDownloader
             processProgress = (int)(currentFrame / totalFramesToProcess * 100);
         }
 
+        if (text.Contains("progress=end"))
+        {
+            processProgress = 100;
+        }
+
         var messageToWs = Encoding.UTF8.GetBytes($"Processing: {processProgress}");
         _webSocketClient.SendAsync(messageToWs, WebSocketMessageType.Text, true, CancellationToken.None);
 
@@ -175,5 +180,46 @@ public class VideoDownloader : IVideoDownloader
     {
         var processReport = GetProcessPercentage(outline.Data ?? "");
         Console.WriteLine($"{processReport.description} {processReport.percentage}");
+    }
+
+    public List<string> GetGIFProcessingArgs(string id, string startTime, string endTime)
+    {
+        return new List<string>
+        {
+            @$"-ss {startTime}",
+            @$"-to {endTime}",
+            @"-progress - -nostats",
+            $@"{id}.gif"
+        };
+    }
+
+    public List<string> GetAudioProcessingArgs(string id, string startTime, string endTime)
+    {
+        return new List<string>
+        {
+            @$"-ss {startTime}",
+            @$"-to {endTime}",
+            @"-progress - -nostats",
+            $@"{id}_audio.mp3"
+        };
+    }
+
+    public List<string> GetGIFDownloadArgs(string id)
+    {
+        return new()
+        {
+            "--remux-video mp4",
+            $"-o {id}.mp4"
+        };
+    }
+
+    public List<string> GetAudioDownloadArgs(string id)
+    {
+        return new()
+        {
+            "-x",
+            "--audio-format mp3",
+            $"-o {id}.mp3"
+        };
     }
 }
