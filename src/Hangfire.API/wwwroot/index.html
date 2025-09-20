@@ -62,26 +62,26 @@
         <div>
             <div id="player"></div>
         </div>
-        <div id="conTimeframeControls" class="flex flex-1 justify-between items-center gap-10 ">
-            <div class="flex-1 flex-col grow">
+        <div id="conTimeframeControls" class="flex flex-1 justify-between items-center gap-4 ">
+            <div class="flex-1/4 flex-col grow">
                 <label class="block" for="txtStartTime">Starting second:</label>
                 <div class="relative">
                     <span
                         class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">schedule</span>
                     <input class="form-input flex w-full rounded-lg text-white pl-12 pr-4 text-base transition-all"
-                        id="txtStartTime" type="number" value="147">
+                        id="txtStartTime" type="number" value="147" placeholder="00:00:00" step="0.1">
                 </div>
             </div>
-            <div class="flex-1 flex-col grow">
+            <div class="flex-1/4 flex-col grow">
                 <label class="block" for="txtEndTime">Ending second:</label>
                 <div class="relative">
                     <span
                         class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">hourglass_bottom</span>
                     <input class="form-input flex w-full rounded-lg text-white pl-12 pr-4 text-base transition-all"
-                        id="txtEndTime" type="number" value="152">
+                        id="txtEndTime" type="number" value="152" placeholder="00:00:00" step="0.1">
                 </div>
             </div>
-            <div class="flex-1/2 flex-col self-end">
+            <div class="flex-1/4 flex-col self-end">
                 <select class="form-input pr-10 rounded-lg" name="extractionType" id="drpExtractionType">
                     <option value="0">Audio</option>
                     <option value="1">GIF</option>
@@ -89,17 +89,23 @@
                 <span
                     class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
             </div>
+            <div class="flex-1/4 flex-col self-end">
+                <button id="btnPlay"
+                    class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--accent-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
+                    <span class="truncate">Play</span>
+                </button>
+            </div>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col gap-4">
             <div class="relative">
                 <button id="btnProcess"
-                    class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
+                    class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
                     <span class="truncate">Extract</span>
                 </button>
             </div>
-            <div>
-                <label class="text-gray-400 text-sm" for="prgProcess">Processing...</label>
-                <progress id="prgProcess" class="w-full" max="100" value="1"></progress>
+            <div id="progressContainer">
+                <!-- <label class="text-gray-400 text-sm" for="prgProcess">Processing...</label>
+                <progress id="prgProcess" class="w-full" max="100" value="1"></progress> -->
             </div>
             <div class="w-full" id="conResult">
 

@@ -3,12 +3,15 @@
 - [X] Move time parameters to client request
 - [X] Return file in separate endpoint
 - [ ] Create a frontend
-    - [ ] Vanilla HTML/CSS/JS
-    - [ ] Use YouTube's iFrame
-    - [ ] Have inputs for start and end time
+    - [X] Vanilla HTML/CSS/JS
+    - [X] Use YouTube's iFrame
+    - [X] Have inputs for start and end time
     - [ ] Show a loading bar with the progress
         - [ ] Bonus Points if it can change color on whether it's reporting download or processing
-    - [ ] When ready show a download now button
-    - [ ] Show resulting gif in page
+    - [X] When ready show a download now button
+    - [X] Show resulting gif in page
     - [ ] Consider having a "selection mode" where the user can select on the overlay the time
         - [ ] Have some buttons to fine tune the second on each control that updates automatically on the overlay
+- [ ] Change the time inputs from raw seconds to masked 
+- [ ] Dockerize
+- Make a mo

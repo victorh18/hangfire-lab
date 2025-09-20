@@ -58,6 +58,8 @@ function setWs(id) {
             const downloadButton = getDownloadButton(id)
             conResult.appendChild(downloadButton)
             buttonAppended = true
+            progressContainer.innerText = "";
+
         }
     };
 
@@ -82,18 +84,30 @@ async function process() {
     const endTime = txtEndTime.value;
     const extractionType = parseInt(drpExtractionType.value)
 
-    conResult.innerText = ""
+    conResult.innerText = "";
+    progressContainer.innerText = "";
+
+    setProgressBar()
 
     const resultText = await fetchVideo(url, startTime, endTime, extractionType);
     setWs(resultText)
     const resultNode = document.createElement('a');
     resultNode.href = `https://localhost:7048/api/File/${resultText}`;
     resultNode.innerText = "Download your file here!";
-    //resultNode.download = resultText;
-    // conResult.appendChild(resultNode);
-    // conResult.appendChild(document.createElement("br"));
 }
 
+function setProgressBar() {
+    let label = document.createElement('label');
+    label.innerText = "Processing...";
 
+    let progressBar = document.createElement('progress');
+    progressBar.className = "w-full";
+    progressBar.id = 'prgProcess';
+    progressBar.max = 100;
+    progressBar.value = 0;
+
+    progressContainer.appendChild(label);
+    progressContainer.appendChild(progressBar);
+}
 
 btnProcess.addEventListener('click', process);

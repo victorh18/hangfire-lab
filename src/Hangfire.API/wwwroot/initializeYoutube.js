@@ -38,17 +38,22 @@ function resetYoutubeFrame(e) {
     console.log('pasted value: ', url);
     const videoId = url.split("v=")[1];
     player.loadVideoById(videoId);
-    // player = new YT.Player("player", {
-    //     height: "390",
-    //     width: IFRAME_WIDTH.toString(),
-    //     videoId: videoId,
-    //     playerVars: {
-    //         playsinline: 1,
-    //         origin: "http://127.0.0.1:5500",
-    //     },
-    //     events: {
-    //         onReady: onPlayerReady,
-    //         //'onStateChange': onPlayerStateChange
-    //     },
-    // });
 }
+
+function pauseVideo() {
+    player.pauseVideo();
+}
+
+function playSection() {
+    var startTime = Number(txtStartTime.value);
+    var endTime = Number(txtEndTime.value);
+
+    var difference = endTime - startTime
+
+    player.seekTo(startTime, true);
+    player.playVideo()
+
+    setTimeout(pauseVideo, difference * 1000)
+}
+
+btnPlay.addEventListener('click', playSection)

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
@@ -21,7 +19,7 @@ public class VideoDownloader : IVideoDownloader
 
     private decimal videoFPS = 0;
     private int processProgress = 0;
-    private int secondsToProcess = 0;
+    private decimal secondsToProcess = 0;
     private decimal totalFramesToProcess = 0;
     public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime, ExtractionType extractionType)
     {
@@ -79,7 +77,7 @@ public class VideoDownloader : IVideoDownloader
 
         var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : @"/" + Path.Combine("Users", "Videlarosa", "Projects", "personal");
 
-        secondsToProcess = 5;
+        secondsToProcess = GetIntervalLength(startTime, endTime);
 
         processingProcess.StartInfo.FileName = "ffmpeg";
         var fileName = GetDownloadFileName(extractionType, id);
@@ -242,4 +240,20 @@ public class VideoDownloader : IVideoDownloader
 
         return $"{id}.mp4";
     }
+
+    private decimal GetSecondsFromFormat(string time)
+    {
+        var sections = time.Split(":").Select(decimal.Parse).ToArray();
+        var seconds = (sections[0] * 3600) + (sections[1] * 60) + sections[2];
+
+        return seconds;
+    }
+    private decimal GetIntervalLength(string startTime, string endTime)
+    {
+        var startSeconds = GetSecondsFromFormat(startTime);
+        var endSeconds = GetSecondsFromFormat(endTime);
+
+        return endSeconds - startSeconds;
+    }
+
 }
