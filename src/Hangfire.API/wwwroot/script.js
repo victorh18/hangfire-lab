@@ -9,7 +9,7 @@ function getFormattedTimeStamp(_seconds) {
     return `00:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
-async function fetchVideo(url, startTime, endTime) {
+async function fetchVideo(url, startTime, endTime, extractionType = 0) {
     const formattedStartTime = getFormattedTimeStamp(startTime);
     const formattedEndTime = getFormattedTimeStamp(endTime);
 
@@ -19,7 +19,8 @@ async function fetchVideo(url, startTime, endTime) {
         "timeStamps": {
             "startTime": `${formattedStartTime}`,
             "endTime": `${formattedEndTime}`
-        }
+        },
+        extractionType
     }
 
     const headers = {
@@ -79,10 +80,11 @@ async function process() {
     const url = txtVideoUrl.value;
     const startTime = txtStartTime.value;
     const endTime = txtEndTime.value;
+    const extractionType = parseInt(drpExtractionType.value)
 
     conResult.innerText = ""
 
-    const resultText = await fetchVideo(url, startTime, endTime);
+    const resultText = await fetchVideo(url, startTime, endTime, extractionType);
     setWs(resultText)
     const resultNode = document.createElement('a');
     resultNode.href = `https://localhost:7048/api/File/${resultText}`;

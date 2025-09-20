@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Hangfire.Application.Common;
 
 namespace Hangfire.API.Dtos.Extractor;
 
@@ -10,6 +11,7 @@ public class VideoExtractorRequest
 
     [Required]
     public VideoTimeStamp TimeStamps { get; set; }
+    public ExtractionType ExtractionType { get; set; }
 
 }
 

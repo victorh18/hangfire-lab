@@ -3,12 +3,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
+using Hangfire.Application.Common;
 
 namespace Hangfire.Application.VideoDownloader;
 
 public interface IVideoDownloader
 {
-    public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime);
+    public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime, ExtractionType extractionType);
 }
 public class VideoDownloader : IVideoDownloader
 {
@@ -22,16 +23,16 @@ public class VideoDownloader : IVideoDownloader
     private int processProgress = 0;
     private int secondsToProcess = 0;
     private decimal totalFramesToProcess = 0;
-    public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime)
+    public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime, ExtractionType extractionType)
     {
         var downloadJobId = BackgroundJob.Enqueue(() =>
-            DownloadProcess(id, videoUrl)
+            DownloadProcess(id, videoUrl, extractionType)
         );
 
-        BackgroundJob.ContinueJobWith(downloadJobId, () => ProcessDownload(id, startTime, endTime));
+        BackgroundJob.ContinueJobWith(downloadJobId, () => ProcessDownload(id, startTime, endTime, extractionType));
     }
 
-    public void DownloadProcess(string id, string videoUrl)
+    public void DownloadProcess(string id, string videoUrl, ExtractionType extractionType)
     {
         Console.WriteLine($"Enqueueing video with id: {id} url: {videoUrl}");
 
@@ -45,8 +46,8 @@ public class VideoDownloader : IVideoDownloader
 
         downloadProcess.StartInfo.FileName = "yt-dlp";
         argumentList.Add(videoUrl);
-        // argumentList.AddRange(GetGIFDownloadArgs(id));
-        argumentList.AddRange(GetAudioDownloadArgs(id));
+        List<string> additionalArguments = GetDownloadAdditionalArgs(extractionType, id);
+        argumentList.AddRange(additionalArguments);
 
         downloadProcess.StartInfo.Arguments = string.Join(' ', argumentList);
         downloadProcess.StartInfo.UseShellExecute = false;
@@ -64,7 +65,7 @@ public class VideoDownloader : IVideoDownloader
 
     }
 
-    public void ProcessDownload(string id, string startTime, string endTime)
+    public void ProcessDownload(string id, string startTime, string endTime, ExtractionType extractionType)
     {
         Console.WriteLine($"Processing video with id: {id}");
 
@@ -81,10 +82,11 @@ public class VideoDownloader : IVideoDownloader
         secondsToProcess = 5;
 
         processingProcess.StartInfo.FileName = "ffmpeg";
-        argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{id}.mp3");
+        var fileName = GetDownloadFileName(extractionType, id);
+        argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{fileName}");
 
-        // argumentList.AddRange(GetGIFProcessingArgs(id, startTime, endTime));
-        argumentList.AddRange(GetAudioProcessingArgs(id, startTime, endTime));
+        List<string> additionalArguments = GetProcessAdditionalArgs(extractionType, id, startTime, endTime);
+        argumentList.AddRange(additionalArguments);
 
         processingProcess.StartInfo.Arguments = string.Join(' ', argumentList);
 
@@ -200,7 +202,7 @@ public class VideoDownloader : IVideoDownloader
             @$"-ss {startTime}",
             @$"-to {endTime}",
             @"-progress - -nostats",
-            $@"{id}_audio.mp3"
+            $@"{id}.mp3"
         };
     }
 
@@ -219,7 +221,25 @@ public class VideoDownloader : IVideoDownloader
         {
             "-x",
             "--audio-format mp3",
-            $"-o {id}.mp3"
+            $"-o {id}_audio.mp3"
         };
+    }
+
+    private List<string> GetDownloadAdditionalArgs(ExtractionType extractionType, string id)
+    {
+        return extractionType == ExtractionType.AUDIO ? GetAudioDownloadArgs(id) : GetGIFDownloadArgs(id);
+    }
+
+    private List<string> GetProcessAdditionalArgs(ExtractionType extractionType, string id, string startTime, string endTime)
+    {
+        return extractionType == ExtractionType.AUDIO ? GetAudioProcessingArgs(id, startTime, endTime) : GetGIFProcessingArgs(id, startTime, endTime);
+    }
+
+    private string GetDownloadFileName(ExtractionType extractionType, string id)
+    {
+        if (extractionType == ExtractionType.AUDIO)
+            return $"{id}_audio.mp3";
+
+        return $"{id}.mp4";
     }
 }

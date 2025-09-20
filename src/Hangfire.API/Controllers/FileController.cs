@@ -18,10 +18,10 @@ namespace Hangfire.API.Controllers
         {
             try
             {
-                var fileBytes = await _fileHandling.GetFileFromId(id);
+                var (fileBytes, mimeType, fileName) = await _fileHandling.GetFileFromId(id);
 
                 // Return the file with appropriate content type
-                return File(fileBytes, "audio/mp3", $"{id}.mp3");
+                return File(fileBytes, mimeType, fileName);
             }
             catch (FileNotFoundException)
             {
