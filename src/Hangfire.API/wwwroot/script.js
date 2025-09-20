@@ -1,4 +1,6 @@
 //alert("hi mom")
+/* @type {HTMLProgressElement} */
+
 const _URL = "https://localhost:7048/api/Extractor";
 
 function getFormattedTimeStamp(_seconds) {
@@ -38,6 +40,11 @@ async function fetchVideo(url, startTime, endTime) {
 
     return responseData;
 }
+
+setInterval(() => {
+    console.log(prgProcess)
+    prgProcess.value += 5;
+}, 1_000)
 
 async function process() {
     const url = txtVideoUrl.value;

@@ -4,44 +4,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meme Extractor</title>
+    <title>Meme Extractor PoC</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+    <link as="style"
+        href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Space+Grotesk%3Awght%40400%3B500%3B700"
+        onload="this.rel='stylesheet'" rel="stylesheet" />
+    <style src="./styles.css"></style>
+    <style type="text/tailwindcss">
+        :root {
+      --primary-color: #4f46e5;
+      --secondary-color: #1f2937;
+      --accent-color: #38bdf8;
+      --text-color: #f9fafb;
+      --bg-color: #111827;
+    }
+    .form-input, .form-select {
+      background-color: var(--secondary-color);
+      border: 1px solid #374151;
+    }   
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
 </head>
 
-<body>
-    <header>
-        <h1>Meme extractor PoC</h1>
+<body class="bg-[var(--bg-color)] text-[var(--text-color)] flex flex-1 flex-col items-center">
+    <header class="flex border-b-2 border-b-blue-100/20 w-full px-4 py-4">
+        <div class="w-1/6">
+            <p>MemeExtractor</p>
+        </div>
+        <nav class="flex flex-1 gap-6 justify-center">
+            <a href="">My Gifs</a>
+            <a href="">My History</a>
+            <a href="">Explore</a>
+        </nav>
+        <div class="w-1/6 flex justify-end">
+            <span class="material-symbols-outlined">menu</span>
+        </div>
     </header>
-    <main>
-        <h2>Please paste the video from which you want to extract your meme</h2>
+    <main class="flex flex-col gap-4 p-6">
+        <div>
+            <h1 class="text-4xl text-left">Extract your meme</h1>
+            <h2 class="text-gray-400">Please paste the video from which you want to extract your meme</h2>
+        </div>
+
         <div id="conVideoUrlControls" style="display: flex; flex-direction: column;">
-            <label for="txtVideoUrl">Video URL:</label>
-            <input id="txtVideoUrl" type="text" value="https://www.youtube.com/watch?v=QG64mYP0d7o">
+            <label for="txtVideoUrl">Video URL</label>
+            <div class="relative">
+                <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">link</span>
+                <input class="form-input flex w-full rounded-lg text-white h-12 pl-12 pr-4 text-base transition-all"
+                    id="txtVideoUrl" type="text" value="https://www.youtube.com/watch?v=QG64mYP0d7o">
+            </div>
         </div>
         <div>
             <div id="player"></div>
         </div>
-        <div id="conTimeframeControls" style="display: flex; flex-direction: row; gap: 10px; align-items: center;">
-            <div style="display: flex; flex-direction: column;">
-                <label for="txtStartTime">Starting second:</label>
-                <input id="txtStartTime" type="number" value="147">
+        <div id="conTimeframeControls" class="flex flex-1 justify-between items-center gap-10 ">
+            <div class="flex-1 flex-col grow">
+                <label class="block" for="txtStartTime">Starting second:</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">schedule</span>
+                    <input class="form-input flex w-full rounded-lg text-white h-12 pl-12 pr-4 text-base transition-all"
+                        id="txtStartTime" type="number" value="147">
+                </div>
             </div>
-            <div style="display: flex; flex-direction: column;">
-                <label for="txtEndTime">Ending second:</label>
-                <input id="txtEndTime" type="number" value="152">
+            <div class="flex-1 flex-col grow">
+                <label class="block" for="txtEndTime">Ending second:</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">hourglass_bottom</span>
+                    <input class="form-input flex w-full rounded-lg text-white h-12 pl-12 pr-4 text-base transition-all"
+                        id="txtEndTime" type="number" value="152">
+                </div>
             </div>
-            <div>
-                <button id="btnProcess">Process</button>
+            <div class="flex-1/2 flex-col self-end">
+                <button id="btnProcess"
+                    class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
+                    <span class="truncate">Extract</span>
+                </button>
             </div>
         </div>
-        <div>
-            <h4>Result:</h4>
+        <div class="flex flex-col">
+            <div>
+                <label class="text-gray-400 text-sm" for="prgProcess">Processing...</label>
+                <progress id="prgProcess" class="w-full" max="100" value="30"></progress>
+            </div>
+            <button
+                class="w-full bg-[var(--accent-color)] h-12 text-white font-bold transition-all rounded-lg hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--accent-color)]">
+                <span>Download!</span>
+            </button>
             <div id="conResult">
 
             </div>
         </div>
     </main>
     <footer>
-        <p>&copy; 2025 Your Website</p>
+        <p>&copy; 2025 Meme Extractor</p>
     </footer>
     <script src="./script.js"></script>
     <script src="./initializeYoutube.js"></script>
