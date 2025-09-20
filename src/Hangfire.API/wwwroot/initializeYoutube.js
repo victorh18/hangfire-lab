@@ -24,9 +24,31 @@ function onYouTubeIframeAPIReady() {
             //'onStateChange': onPlayerStateChange
         },
     });
+
+    txtVideoUrl.addEventListener('paste', resetYoutubeFrame)
 }
 
 function onPlayerReady(event) {
-    event.target.playVideo();
+    //event.target.playVideo();
     event.target.mute();
+}
+
+function resetYoutubeFrame(e) {
+    const url = e.clipboardData.getData("text")
+    console.log('pasted value: ', url);
+    const videoId = url.split("v=")[1];
+    player.loadVideoById(videoId);
+    // player = new YT.Player("player", {
+    //     height: "390",
+    //     width: IFRAME_WIDTH.toString(),
+    //     videoId: videoId,
+    //     playerVars: {
+    //         playsinline: 1,
+    //         origin: "http://127.0.0.1:5500",
+    //     },
+    //     events: {
+    //         onReady: onPlayerReady,
+    //         //'onStateChange': onPlayerStateChange
+    //     },
+    // });
 }

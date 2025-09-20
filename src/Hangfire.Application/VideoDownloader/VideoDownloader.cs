@@ -36,7 +36,7 @@ public class VideoDownloader : IVideoDownloader
         Console.WriteLine($"Enqueueing video with id: {id} url: {videoUrl}");
 
         Console.WriteLine("Connecting to web socket...");
-        Uri _webSocketUrl = new("wss://localhost:7048/api/report/worker-reporter-download");
+        Uri _webSocketUrl = new($"wss://localhost:7048/api/report/{id}");
         Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
         Console.WriteLine("Connected!");
 
@@ -69,7 +69,7 @@ public class VideoDownloader : IVideoDownloader
         Console.WriteLine($"Processing video with id: {id}");
 
         Console.WriteLine("Connecting to web socket...");
-        Uri _webSocketUrl = new("wss://localhost:7048/api/report/worker-reporter-download");
+        Uri _webSocketUrl = new($"wss://localhost:7048/api/report/{id}");
         Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
         Console.WriteLine("Connected!");
 

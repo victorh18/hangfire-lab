@@ -1,6 +1,3 @@
-//alert("hi mom")
-/* @type {HTMLProgressElement} */
-
 const _URL = "https://localhost:7048/api/Extractor";
 
 function getFormattedTimeStamp(_seconds) {
@@ -17,7 +14,7 @@ async function fetchVideo(url, startTime, endTime) {
     const formattedEndTime = getFormattedTimeStamp(endTime);
 
     let request = {
-        "id": "asdf",
+        "id": "asf",
         "videoUrl": `${url}`,
         "timeStamps": {
             "startTime": `${formattedStartTime}`,
@@ -41,23 +38,60 @@ async function fetchVideo(url, startTime, endTime) {
     return responseData;
 }
 
-setInterval(() => {
-    console.log(prgProcess)
-    prgProcess.value += 5;
-}, 1_000)
+
+function setWs(id) {
+    const _url = `wss://localhost:7048/api/report/frontend/${id}`;
+    let ws = new WebSocket(_url);
+    let buttonAppended = false;
+
+    ws.onopen = () => {
+        console.log(`Connected to progress report for ${id}`);
+    };
+
+    ws.onmessage = (event) => {
+        console.log(`Received report item for ${id}:`, event);
+        let progress = event.data.split(":")[1].trim();
+        prgProcess.value = progress
+
+        if (event.data == "Processing: 100" && buttonAppended == false) {
+            const downloadButton = getDownloadButton(id)
+            conResult.appendChild(downloadButton)
+            buttonAppended = true
+        }
+    };
+
+    ws.onerror = (err) => {
+        console.error(`WebSocket error for ${id}`, err);
+    };
+}
+
+function getDownloadButton(id) {
+    const downloadButton = document.createElement('a');
+    const downloadSpan = document.createElement('span');
+    downloadSpan.innerText = "Download!"
+    downloadButton.href = `https://localhost:7048/api/File/${id}`
+    downloadButton.className = 'flex justify-center items-center w-full bg-[var(--accent-color)] h-12 text-white font-bold transition-all rounded-lg hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--accent-color)]'
+    downloadButton.appendChild(downloadSpan);
+    return downloadButton;
+}
 
 async function process() {
     const url = txtVideoUrl.value;
     const startTime = txtStartTime.value;
     const endTime = txtEndTime.value;
 
+    conResult.innerText = ""
+
     const resultText = await fetchVideo(url, startTime, endTime);
+    setWs(resultText)
     const resultNode = document.createElement('a');
     resultNode.href = `https://localhost:7048/api/File/${resultText}`;
     resultNode.innerText = "Download your file here!";
     //resultNode.download = resultText;
-    conResult.appendChild(resultNode);
-    conResult.appendChild(document.createElement("br"));
+    // conResult.appendChild(resultNode);
+    // conResult.appendChild(document.createElement("br"));
 }
+
+
 
 btnProcess.addEventListener('click', process);
