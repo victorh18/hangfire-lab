@@ -1,4 +1,6 @@
 using System;
+using Hangfire.Application.Config;
+using Microsoft.Extensions.Options;
 
 namespace Hangfire.Application.FileHandling;
 
@@ -9,12 +11,18 @@ public interface IFileHandling
 
 public class FileHandling : IFileHandling
 {
+    private readonly IOptions<AppSettings> _options;
     const string BASE_PATH = "/Users/Videlarosa/Projects/personal/hangfire-lab/src/Hangfire.Worker/";
     private readonly Dictionary<string, string> mimeTypes = new()
     {
         {".mp3", "audio/mp3"},
         {".gif", "image/gif"}
     };
+
+    public FileHandling(IOptions<AppSettings> options)
+    {
+        _options = options;
+    }
 
     public async Task<(byte[] fileBytes, string mimeType, string fileName)> GetFileFromId(string id)
     {
@@ -29,7 +37,7 @@ public class FileHandling : IFileHandling
 
     private string FindFile(string id)
     {
-        var file = Directory.GetFiles(BASE_PATH)
+        var file = Directory.GetFiles(_options.Value.FilePaths.ResultsPath)
             .Where(file => mimeTypes.Keys.Contains(Path.GetExtension(file)))
             .FirstOrDefault(file => Path.GetFileNameWithoutExtension(file) == id);
         if (file != null)

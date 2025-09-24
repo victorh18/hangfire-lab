@@ -5,13 +5,17 @@ using Hangfire.Mongo.Migration.Strategies.Backup;
 using Hangfire.Worker;
 using MongoDB.Driver;
 using Hangfire.Application;
+using Hangfire.Application.Config;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
 
 void AddMongo(IServiceCollection services)
 {
-    var mongoUrlBuilder = new MongoUrlBuilder("mongodb://hangfire:hangfirePassword@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/hangfire?replicaSet=rs0"); // TODO: move this to configuration
+    // var mongoUrlBuilder = new MongoUrlBuilder("mongodb://hangfire:hangfirePassword@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/hangfire?replicaSet=rs0"); // TODO: move this to configuration
+    var hangfireConnString = builder.Configuration["AppSettings:ConnectionStrings:Hangfire"];
+    Console.WriteLine("MONGO DB CONN STRING: " + hangfireConnString);
+    var mongoUrlBuilder = new MongoUrlBuilder(hangfireConnString); // TODO: move this to configuration
     var mongoClient = new MongoClient(mongoUrlBuilder.ToMongoUrl());
 
     services.AddHangfire(configuration => configuration
@@ -36,6 +40,7 @@ void AddMongo(IServiceCollection services)
     });
 }
 
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 AddMongo(builder.Services);
 
 var host = builder.Build();

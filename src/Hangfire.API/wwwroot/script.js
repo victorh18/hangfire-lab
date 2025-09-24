@@ -1,4 +1,6 @@
-const _URL = "https://localhost:7048/api/Extractor";
+const BASE_URL = "http://localhost:8080"
+const BASE_URL_WS = "ws://localhost:8080"
+const _URL = `${BASE_URL}/api/Extractor`;
 
 function getFormattedTimeStamp(_seconds) {
     const SECONDS_IN_MINUTES = 60;
@@ -41,7 +43,7 @@ async function fetchVideo(url, startTime, endTime, extractionType = 0) {
 
 
 function setWs(id) {
-    const _url = `wss://localhost:7048/api/report/frontend/${id}`;
+    const _url = `${BASE_URL_WS}/api/report/frontend/${id}`;
     let ws = new WebSocket(_url);
     let buttonAppended = false;
 
@@ -72,7 +74,7 @@ function getDownloadButton(id) {
     const downloadButton = document.createElement('a');
     const downloadSpan = document.createElement('span');
     downloadSpan.innerText = "Download!"
-    downloadButton.href = `https://localhost:7048/api/File/${id}`
+    downloadButton.href = `${BASE_URL}/api/File/${id}`
     downloadButton.className = 'flex justify-center items-center w-full bg-[var(--accent-color)] h-12 text-white font-bold transition-all rounded-lg hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--accent-color)]'
     downloadButton.appendChild(downloadSpan);
     return downloadButton;
@@ -92,7 +94,7 @@ async function process() {
     const resultText = await fetchVideo(url, startTime, endTime, extractionType);
     setWs(resultText)
     const resultNode = document.createElement('a');
-    resultNode.href = `https://localhost:7048/api/File/${resultText}`;
+    resultNode.href = `${BASE_URL}/api/File/${resultText}`;
     resultNode.innerText = "Download your file here!";
 }
 

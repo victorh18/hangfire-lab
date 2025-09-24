@@ -6,12 +6,16 @@ using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
 using Hangfire.Application.Report;
 using Hangfire.Application.FileHandling;
+using Hangfire.Application.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
-void AddMongo(IServiceCollection services)
+void AddMongo(IServiceCollection services, WebApplicationBuilder builder)
 {
-    var mongoUrlBuilder = new MongoUrlBuilder("mongodb://hangfire:hangfirePassword@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/hangfire?replicaSet=rs0"); // TODO: move this to configuration
+    var hangfireConnString = builder.Configuration["AppSettings:ConnectionStrings:Hangfire"];
+    Console.WriteLine("MONGO DB CONN STRING: " + hangfireConnString);
+    // var mongoUrlBuilder = new MongoUrlBuilder("mongodb://hangfire:hangfirePassword@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/hangfire?replicaSet=rs0"); // TODO: move this to configuration
+    var mongoUrlBuilder = new MongoUrlBuilder(hangfireConnString); // TODO: move this to configuration
     var mongoClient = new MongoClient(mongoUrlBuilder.ToMongoUrl());
 
     services.AddHangfire(configuration => configuration
@@ -31,7 +35,7 @@ void AddMongo(IServiceCollection services)
     );
 }
 
-AddMongo(builder.Services);
+AddMongo(builder.Services, builder);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -39,9 +43,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddTransient<IVideoDownloader, VideoDownloader>();
 builder.Services.AddSingleton<IFileHandling, FileHandling>();
 builder.Services.AddSingleton<ReportWebSocketProvider>();
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 var app = builder.Build();
 

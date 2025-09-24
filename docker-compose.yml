@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  extractor-api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.API
+    container_name: extractor-api
+    ports:
+      - "8080:8080"   # host:container
+    environment:
+      - DOTNET_ENVIRONMENT=Staging
+    volumes:
+      - result-files:/mnt
+    networks:
+      - mongo-cluster
+
+  extractor-worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.Worker
+    container_name: extractor-worker
+    environment:
+      - DOTNET_ENVIRONMENT=Staging
+    volumes:
+      - result-files:/mnt
+    networks:
+      - mongo-cluster
+
+  extractor-mongo-primary:
+    build: ./src/scripts/db
+    container_name: extractor-mongo-primary
+    command: ["--replSet", "rs0", "--auth", "--keyFile", "/etc/mongo-keyfile"]
+    ports: 
+      - "27017:27017"
+    volumes:
+      # - ./mongo-keyfile:/etc/mongo-keyfile:ro
+      - mongo-primary-data:/data/db
+    networks: 
+      - mongo-cluster
+
+  extractor-mongo-secondary:
+    build: ./src/scripts/db
+    container_name: extractor-mongo-secondary
+    command: ["--replSet", "rs0", "--auth", "--keyFile", "/etc/mongo-keyfile"]
+    ports:
+      - "27018:27017"
+    volumes:
+      # - ./mongo-keyfile:/etc/mongo-keyfile:ro
+      - mongo-secondary-data:/data/db
+    networks:
+      - mongo-cluster
+
+  extractor-mongo-arbiter:
+    build: ./src/scripts/db
+    container_name: extractor-mongo-arbiter
+    command: ["--replSet", "rs0", "--auth", "--keyFile", "/etc/mongo-keyfile"]
+    ports:
+      - "27019:27017"
+    volumes:
+      # - ./mongo-keyfile:/etc/mongo-keyfile:ro
+      - mongo-arbiter-data:/data/db
+    networks:
+      - mongo-cluster
+
+volumes:
+  mongo-primary-data:
+  mongo-secondary-data:
+  mongo-arbiter-data:
+  result-files:
+
+networks:
+  mongo-cluster:
+    driver: bridge

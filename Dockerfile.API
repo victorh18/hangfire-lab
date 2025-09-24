@@ -1,0 +1,21 @@
+# Use the official .NET 9 SDK image to build the app
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy the rest of the source and build
+COPY . ./
+RUN dotnet restore
+RUN dotnet publish ./src/Hangfire.API/Hangfire.API.csproj -c Release -o /app/publish /p:UseAppHost=false
+
+# Final stage: use a smaller runtime-only image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Expose port 8080 inside the container
+EXPOSE 8080
+
+# Set the entrypoint to your built app
+RUN apt update
+RUN apt install -y iputils-ping curl
+ENTRYPOINT ["dotnet", "Hangfire.API.dll"]

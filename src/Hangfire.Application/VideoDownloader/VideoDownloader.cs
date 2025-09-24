@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using Hangfire.Application.Common;
+using Hangfire.Application.Config;
+using Microsoft.Extensions.Options;
 
 namespace Hangfire.Application.VideoDownloader;
 
@@ -21,6 +23,14 @@ public class VideoDownloader : IVideoDownloader
     private int processProgress = 0;
     private decimal secondsToProcess = 0;
     private decimal totalFramesToProcess = 0;
+
+    private readonly IOptions<AppSettings> _options;
+
+    public VideoDownloader(IOptions<AppSettings> options)
+    {
+        _options = options;
+    }
+
     public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime, ExtractionType extractionType)
     {
         var downloadJobId = BackgroundJob.Enqueue(() =>
@@ -35,7 +45,7 @@ public class VideoDownloader : IVideoDownloader
         Console.WriteLine($"Enqueueing video with id: {id} url: {videoUrl}");
 
         Console.WriteLine("Connecting to web socket...");
-        Uri _webSocketUrl = new($"wss://localhost:7048/api/report/{id}");
+        Uri _webSocketUrl = new($"{_options.Value.HostUrls.InternalWebSocket}/api/report/{id}");
         Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
         Console.WriteLine("Connected!");
 
@@ -68,20 +78,20 @@ public class VideoDownloader : IVideoDownloader
         Console.WriteLine($"Processing video with id: {id}");
 
         Console.WriteLine("Connecting to web socket...");
-        Uri _webSocketUrl = new($"wss://localhost:7048/api/report/{id}");
+        Uri _webSocketUrl = new($"{_options.Value.HostUrls.InternalWebSocket}/api/report/{id}");
         Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
         Console.WriteLine("Connected!");
 
         Process processingProcess = new();
         List<string> argumentList = new();
 
-        var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : @"/" + Path.Combine("Users", "Videlarosa", "Projects", "personal");
-
+        //var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : @"/" + Path.Combine("Users", "Videlarosa", "Projects", "personal");
+        var path = _options.Value.FilePaths.DownloadPath;
         secondsToProcess = GetIntervalLength(startTime, endTime);
 
         processingProcess.StartInfo.FileName = "ffmpeg";
         var fileName = GetDownloadFileName(extractionType, id);
-        argumentList.Add($@"-i {path}/hangfire-lab/src/Hangfire.Worker/{fileName}");
+        argumentList.Add($@"-i {path}/{fileName}");
 
         List<string> additionalArguments = GetProcessAdditionalArgs(extractionType, id, startTime, endTime);
         argumentList.AddRange(additionalArguments);
@@ -184,23 +194,25 @@ public class VideoDownloader : IVideoDownloader
 
     public List<string> GetGIFProcessingArgs(string id, string startTime, string endTime)
     {
+        var basePath = _options.Value.FilePaths.ResultsPath;
         return new List<string>
         {
             @$"-ss {startTime}",
             @$"-to {endTime}",
             @"-progress - -nostats",
-            $@"{id}.gif"
+            $@"{basePath}/{id}.gif"
         };
     }
 
     public List<string> GetAudioProcessingArgs(string id, string startTime, string endTime)
     {
+        var basePath = _options.Value.FilePaths.ResultsPath;
         return new List<string>
         {
             @$"-ss {startTime}",
             @$"-to {endTime}",
             @"-progress - -nostats",
-            $@"{id}.mp3"
+            $@"{basePath}/{id}.mp3"
         };
     }
 
