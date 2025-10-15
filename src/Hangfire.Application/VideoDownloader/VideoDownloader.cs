@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text;
 using Hangfire.Application.Common;
 using Hangfire.Application.Config;
+using Hangfire.Application.Report;
 using Microsoft.Extensions.Options;
 
 namespace Hangfire.Application.VideoDownloader;
@@ -13,22 +14,16 @@ public interface IVideoDownloader
 }
 public class VideoDownloader : IVideoDownloader
 {
-
-    private readonly ClientWebSocket _webSocketClient = new();
-
-    private int fragmentDownloaded = 0;
-    private int progress = 0;
-
-    private decimal videoFPS = 0;
-    private int processProgress = 0;
     private decimal secondsToProcess = 0;
-    private decimal totalFramesToProcess = 0;
-
+    private readonly ClientWebSocket _webSocketClient = new();
     private readonly IOptions<AppSettings> _options;
+    private readonly DownloadReporter _downloadReporter = new();
+    private ProcessingReporter? _processReporter;
 
     public VideoDownloader(IOptions<AppSettings> options)
     {
         _options = options;
+
     }
 
     public void EnqueueVideoDownload(string id, string videoUrl, string startTime, string endTime, ExtractionType extractionType)
@@ -50,24 +45,12 @@ public class VideoDownloader : IVideoDownloader
         Console.WriteLine("Connected!");
 
         Process downloadProcess = new();
-        List<string> argumentList = new();
-
-        downloadProcess.StartInfo.FileName = "yt-dlp";
-        argumentList.Add(videoUrl);
-        List<string> additionalArguments = GetDownloadAdditionalArgs(extractionType, id);
-        argumentList.AddRange(additionalArguments);
-
-        downloadProcess.StartInfo.Arguments = string.Join(' ', argumentList);
-        downloadProcess.StartInfo.UseShellExecute = false;
-        downloadProcess.StartInfo.RedirectStandardOutput = true;
+        downloadProcess.StartInfo = GetDownloadProcessStartInfo(extractionType, id, videoUrl);
         downloadProcess.OutputDataReceived += DownloadProcessOutputHandler;
 
         Console.WriteLine($"Calling process: {downloadProcess.StartInfo.FileName} {downloadProcess.StartInfo.Arguments}");
-
         downloadProcess.Start();
-
         downloadProcess.BeginOutputReadLine();
-
         downloadProcess.WaitForExit();
         Task.WaitAll([_webSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None)]);
 
@@ -77,107 +60,51 @@ public class VideoDownloader : IVideoDownloader
     {
         Console.WriteLine($"Processing video with id: {id}");
 
+        var path = _options.Value.FilePaths.DownloadPath;
+        secondsToProcess = GetIntervalLength(startTime, endTime);
+
+        var fileName = GetDownloadFileName(extractionType, id);
+
         Console.WriteLine("Connecting to web socket...");
         Uri _webSocketUrl = new($"{_options.Value.HostUrls.InternalWebSocket}/api/report/{id}");
         Task.WaitAll([_webSocketClient.ConnectAsync(_webSocketUrl, CancellationToken.None)]);
         Console.WriteLine("Connected!");
 
         Process processingProcess = new();
-        List<string> argumentList = new();
-
-        //var path = Environment.OSVersion.Platform.ToString() == "Win32NT" ? @"D:\" + Path.Combine("Projects", "labs") : @"/" + Path.Combine("Users", "Videlarosa", "Projects", "personal");
-        var path = _options.Value.FilePaths.DownloadPath;
-        secondsToProcess = GetIntervalLength(startTime, endTime);
-
-        processingProcess.StartInfo.FileName = "ffmpeg";
-        var fileName = GetDownloadFileName(extractionType, id);
-        argumentList.Add($@"-i {path}/{fileName}");
-
-        List<string> additionalArguments = GetProcessAdditionalArgs(extractionType, id, startTime, endTime);
-        argumentList.AddRange(additionalArguments);
-
-        processingProcess.StartInfo.Arguments = string.Join(' ', argumentList);
-
-        processingProcess.StartInfo.UseShellExecute = false;
-        processingProcess.StartInfo.RedirectStandardOutput = true;
-        processingProcess.StartInfo.RedirectStandardError = true;
+        processingProcess.StartInfo = GetProcessingProcessStartInfo(extractionType, id, startTime, endTime, path, fileName);
         processingProcess.OutputDataReceived += ProcessProcessOutputHandler;
         processingProcess.ErrorDataReceived += ProcessProcessOutputHandler;
 
         Console.WriteLine($"Calling process: {processingProcess.StartInfo.FileName} {processingProcess.StartInfo.Arguments}");
-
         processingProcess.Start();
         processingProcess.BeginOutputReadLine();
         processingProcess.BeginErrorReadLine();
         processingProcess.WaitForExit();
         Task.WaitAll([_webSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Bye", CancellationToken.None)]);
-
-
-        // For the processing progress, get the video fps, and then the duration, and use that to determine the progress, also consider using the minimized version (-progress - -nostats) to make it easier to process 
     }
 
     public (string description, int percentage) GetProgressPercentage(string text)
     {
+        var result = _downloadReporter.GetProgress(text);
 
-        if (text.Contains("Downloading m3u8 information"))
-        {
-            progress = 5;
-        }
-        else if (text.Contains("Downloading m3u8 manifest"))
-        {
-            progress = 9;
-        }
-        else if (text.Contains("[download]") && !text.Contains("(frag 0"))
-        {
-            if (text.Contains("Destination:"))
-            {
-                fragmentDownloaded++;
-            }
-            var downloadBasePercentage = fragmentDownloaded == 1 ? 10 : 50;
-            var parts = text.Split(" ");
-            var possiblePercentage = parts?.FirstOrDefault(s => s.Contains("%"))?.Replace("%", "");
-
-            if (decimal.TryParse(possiblePercentage, out decimal actualPercentage))
-            {
-                progress = Math.Max(progress, downloadBasePercentage + (int)Math.Floor(actualPercentage / 2));
-            }
-            else
-            {
-                return ("Weird text: " + text, 8);
-            }
-        }
-
-        var messageToWs = Encoding.UTF8.GetBytes($"Downloading: {progress}");
+        var messageToWs = Encoding.UTF8.GetBytes($"Downloading: {result.value}");
         _webSocketClient.SendAsync(messageToWs, WebSocketMessageType.Text, true, CancellationToken.None);
 
-        return ("Downloading...", progress);
-
+        return result;
     }
 
     public (string description, int percentage) GetProcessPercentage(string text)
     {
-        if (text.Contains(@"Stream #0:0[0x1](und): Video"))
+        if (_processReporter == null)
         {
-            var fps = text?.Split(",")?.FirstOrDefault(t => t.Contains("fps"))?.Trim().Split(" ")[0];
-            videoFPS = decimal.Parse(fps ?? "0");
-            totalFramesToProcess = (int)(videoFPS * secondsToProcess);
+            _processReporter = new(secondsToProcess);
         }
+        var result = _processReporter.GetProgress(text);
 
-        if (text.Contains("frame=") && !text.Contains(" "))
-        {
-            var currentFrame = decimal.Parse(text.Split("=")[1]);
-            processProgress = (int)(currentFrame / totalFramesToProcess * 100);
-        }
-
-        if (text.Contains("progress=end"))
-        {
-            processProgress = 100;
-        }
-
-        var messageToWs = Encoding.UTF8.GetBytes($"Processing: {processProgress}");
+        var messageToWs = Encoding.UTF8.GetBytes($"Processing: {result.value}");
         _webSocketClient.SendAsync(messageToWs, WebSocketMessageType.Text, true, CancellationToken.None);
 
-        return ("Processing", processProgress);
+        return result;
     }
 
     public void DownloadProcessOutputHandler(object downloadingProcess, DataReceivedEventArgs outline)
@@ -266,6 +193,34 @@ public class VideoDownloader : IVideoDownloader
         var endSeconds = GetSecondsFromFormat(endTime);
 
         return endSeconds - startSeconds;
+    }
+
+    private ProcessStartInfo GetDownloadProcessStartInfo(ExtractionType extractionType, string id, string videoUrl)
+    {
+        List<string> additionalArguments = [videoUrl, .. GetDownloadAdditionalArgs(extractionType, id)];
+
+        return new()
+        {
+            FileName = "yt-dlp",
+            Arguments = string.Join(' ', additionalArguments),
+            UseShellExecute = false,
+            RedirectStandardOutput = true
+        };
+    }
+
+    private ProcessStartInfo GetProcessingProcessStartInfo(ExtractionType extractionType, string id, string startTime, string endTime, string path, string fileName)
+    {
+        var inputArgument = $@"-i {path}/{fileName}";
+        List<string> additionalArguments = [inputArgument, .. GetProcessAdditionalArgs(extractionType, id, startTime, endTime)];
+
+        return new()
+        {
+            FileName = "ffmpeg",
+            Arguments = string.Join(' ', additionalArguments),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
     }
 
 }
