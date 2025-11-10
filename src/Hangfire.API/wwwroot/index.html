@@ -14,13 +14,13 @@
     <style src="./styles.css"></style>
     <style type="text/tailwindcss">
         :root {
-      --primary-color: #4f46e5;
+      --primary-color: #5b52ff;
       --secondary-color: #1f2937;
-      --accent-color: #38bdf8;
+      --accent-color: #00b3ff;
       --text-color: #f9fafb;
       --bg-color: #111827;
     }
-    .form-input, .form-select {
+    .form-input{
       background-color: var(--secondary-color);
       border: 1px solid #374151;
     }   
@@ -63,49 +63,33 @@
             <div id="player"></div>
         </div>
         <div id="conTimeframeControls" class="flex flex-1 justify-between items-center gap-4 ">
-            <div class="flex-1/4 flex-col grow">
-                <label class="block" for="txtStartTime">Starting second:</label>
-                <div class="relative">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">schedule</span>
-                    <input class="form-input flex w-full rounded-lg text-white pl-12 pr-4 text-base transition-all"
-                        id="txtStartTime" type="number" value="147" placeholder="00:00:00" step="0.1">
-                </div>
-            </div>
-            <div class="flex-1/4 flex-col grow">
-                <label class="block" for="txtEndTime">Ending second:</label>
-                <div class="relative">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">hourglass_bottom</span>
-                    <input class="form-input flex w-full rounded-lg text-white pl-12 pr-4 text-base transition-all"
-                        id="txtEndTime" type="number" value="152" placeholder="00:00:00" step="0.1">
-                </div>
-            </div>
-            <div class="flex-1/4 flex-col self-end">
-                <select class="form-input pr-10 rounded-lg" name="extractionType" id="drpExtractionType">
-                    <option value="0">Audio</option>
-                    <option value="1">GIF</option>
-                </select>
-                <span
-                    class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
-            </div>
-            <div class="flex-1/4 flex-col self-end">
+            <time-input title="Starting time:" iconName="⧖"></time-input>
+            <time-input title="Ending time:" iconName="⧗"></time-input>
+
+            <dropdown-select title="Extraction type:">
+                <option value="0">Audio</option>
+                <option value="1">GIF</option>
+            </dropdown-select>
+
+            <!-- <div class="flex-1/4 flex-col self-end">
                 <button id="btnPlay"
                     class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--accent-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
                     <span class="truncate">Play</span>
                 </button>
-            </div>
+            </div> -->
+            <app-button label="Play" icon="▶" variant="secondary"></app-button>
+
         </div>
-        <div class="flex flex-col gap-4">
-            <div class="relative">
+        <hr />
+        <div class="flex w-full flex-col gap-4">
+            <!-- <div class="relative w-full">
                 <button id="btnProcess"
-                    class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
+                    class="flex w-full items-center justify-center rounded-lg h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold  transition-all hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)]">
                     <span class="truncate">Extract</span>
                 </button>
-            </div>
+            </div> -->
+            <app-button label="Extract" icon="⇣" size="full"></app-button>
             <div id="progressContainer">
-                <!-- <label class="text-gray-400 text-sm" for="prgProcess">Processing...</label>
-                <progress id="prgProcess" class="w-full" max="100" value="1"></progress> -->
             </div>
             <div class="w-full" id="conResult">
 
@@ -117,6 +101,7 @@
     </footer>
     <script src="./script.js"></script>
     <script src="./initializeYoutube.js"></script>
+    <script type="module" src="./index.js"></script>
 </body>
 
 </html>
