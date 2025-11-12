@@ -66,7 +66,22 @@ class TimeInput extends HTMLElement {
         return `${this.mmInput?.value}:${this.ssInput?.value}.${this.msInput?.value}`
     }
 
+    get timeValueInSeconds() {
+        const minutes = Number(this.mmInput?.value);
+        const seconds = Number(this.ssInput?.value);
+        const miliseconds = Number(this.msInput?.value);
+        console.log({minutes, seconds, miliseconds})
+
+        const valueInSeconds = (minutes * 60) + (seconds) + (miliseconds / 10);
+
+        return valueInSeconds;
+    }
+
     get iconName() {
+        return this.getAttribute('iconName') || '';
+    }
+
+    get id() {
         return this.getAttribute('iconName') || '';
     }
 
@@ -85,6 +100,7 @@ class TimeInput extends HTMLElement {
         this.shadow.adoptedStyleSheets = [sheet]
         const timeInputContainer = document.createElement('div');
         timeInputContainer.classList.add("container");
+        timeInputContainer.id = this.id;
 
         timeInputContainer.addEventListener('click', () => { console.log(this.timeValue) })
 

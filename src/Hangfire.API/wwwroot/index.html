@@ -32,19 +32,20 @@
 
 <body class="bg-[var(--bg-color)] text-[var(--text-color)] flex flex-1 flex-col items-center">
     <header class="flex border-b-2 border-b-blue-100/20 w-full px-4 py-4">
-        <div class="w-1/6">
+        <div class="flex-1/3">
             <p>MemeExtractor</p>
         </div>
-        <nav class="flex flex-1 gap-6 justify-center">
-            <a href="">My Gifs</a>
-            <a href="">My History</a>
-            <a href="">Explore</a>
-        </nav>
-        <div class="w-1/6 flex justify-end">
+        <app-navbar class="flex-1">
+            <a>My Gifs</a>
+            <a>My History</a>
+            <a>Explore</a>
+        </app-navbar>
+
+        <div class="flex-1/3 flex justify-end">
             <span class="material-symbols-outlined">menu</span>
         </div>
     </header>
-    <main class="flex flex-col gap-4 p-6">
+    <main class="flex flex-col gap-4 p-4 w-full min-w-[100px] max-w-[750px] sm:min-w-[250px] sm:w-[85%] sm:mx-1/12">
         <div>
             <h1 class="text-4xl text-left">Extract your memes</h1>
             <h2 class="text-gray-400">Please paste the video from which you want to extract your meme</h2>
@@ -59,35 +60,30 @@
                     id="txtVideoUrl" type="text" value="https://www.youtube.com/watch?v=QG64mYP0d7o">
             </div>
         </div>
-        <div>
-            <div id="player"></div>
+        <div class="w-full flex-1">
+            <div id="player" class="w-full"></div>
         </div>
-        <div id="conTimeframeControls" class="flex flex-1 justify-between items-center gap-4 ">
-            <time-input title="Starting time:" iconName="⧖"></time-input>
-            <time-input title="Ending time:" iconName="⧗"></time-input>
+        <div id="conTimeframeControls" class="flex flex-1 justify-between items-end gap-1 flex-wrap sm:gap-6 w-full">
+            <time-input id="txtStartTime" title="Starting time:" iconName="⧖" class="flex-1"></time-input>
+            <time-input id="txtEndTime" title="Ending time:" iconName="⧗" class="flex-1"></time-input>
 
-            <dropdown-select title="Extraction type:">
+            <dropdown-select title="Extraction type:" class="flex-1 max-w-fi">
                 <option value="0">Audio</option>
                 <option value="1">GIF</option>
             </dropdown-select>
-
-            <!-- <div class="flex-1/4 flex-col self-end">
-                <button id="btnPlay"
-                    class="flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-[var(--accent-color)] text-white text-base font-bold tracking-wide transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)] w-full sm:w-auto">
-                    <span class="truncate">Play</span>
-                </button>
-            </div> -->
-            <app-button label="Play" icon="▶" variant="secondary"></app-button>
+            <app-button 
+                label="Play" 
+                icon="▶" 
+                variant="secondary" 
+                id="btnPlay" 
+                smLabelMode="iconOnly" 
+                smSize="full"
+                class="flex flex-1 sm:grow-0"
+            ></app-button>
 
         </div>
         <hr />
         <div class="flex w-full flex-col gap-4">
-            <!-- <div class="relative w-full">
-                <button id="btnProcess"
-                    class="flex w-full items-center justify-center rounded-lg h-12 px-6 bg-[var(--primary-color)] text-white text-base font-bold  transition-all hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-color)] focus:ring-[var(--primary-color)]">
-                    <span class="truncate">Extract</span>
-                </button>
-            </div> -->
             <app-button label="Extract" icon="⇣" size="full"></app-button>
             <div id="progressContainer">
             </div>

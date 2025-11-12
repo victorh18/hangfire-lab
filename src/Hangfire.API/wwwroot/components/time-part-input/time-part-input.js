@@ -23,6 +23,11 @@ sheet.replaceSync(/*css*/`
 
     }
 
+    .input-single {
+        text-align: left;
+        width: .7rem;
+    }
+
     .underlined {
         text-decoration: underline;
     }
@@ -39,7 +44,11 @@ class TimePartInput extends HTMLElement {
         this.shadow.adoptedStyleSheets = [sheet];
         this.timePartInputElement = document.createElement('input');
 
-        this.timePartInputElement.addEventListener('change', () => leadingZeros(this.timePartInputElement))
+        if (this.placeholder.length > 1){
+            this.timePartInputElement.addEventListener('change', () => leadingZeros(this.timePartInputElement))
+        } else {
+            this.timePartInputElement.className = 'input-single';
+        }
 
         this.handleFocus(this.timePartInputElement);
         this.setupDefaults(this.timePartInputElement);
@@ -53,7 +62,7 @@ class TimePartInput extends HTMLElement {
     }
 
     get maxValue() {
-        return parseInt(this.getAttribute('maxValue') || "") || 60;
+        return parseInt(this.getAttribute('maxValue') || "") || 59;
     }
 
     get placeholder() {
@@ -67,7 +76,7 @@ class TimePartInput extends HTMLElement {
     /** @param {HTMLInputElement} inputElement */
     setupDefaults(inputElement) {
         inputElement.type = 'number'
-        inputElement.maxLength = 2;
+        inputElement.maxLength = this.placeholder.length;
         inputElement.placeholder = this.placeholder
         inputElement.max = this.maxValue.toString();
         inputElement.min = this.minValue.toString();
@@ -105,10 +114,17 @@ class TimePartInput extends HTMLElement {
      */
     handleFocus(inputElement) {
         inputElement.addEventListener('focus', (event) => {
-            event.target.classList.add('underlined')
+            event.target.classList.add('underlined');
         });
         inputElement.addEventListener('blur', (event) => {
             event.target.classList.remove('underlined')
+            if (Number(event.target.value) > this.maxValue) {
+                this.timePartInputElement.value = this.maxValue
+            }
+
+            if (Number(event.target.value) < this.minValue) {
+                this.timePartInputElement.value = this.minValue
+            }
         })
     }
 }

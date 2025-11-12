@@ -15,6 +15,7 @@ sheet.replaceSync(/*css*/`
         font-family: 'Space Grotesk', sans-serif;
         color: white; 
         cursor: pointer;
+        flex: 1 0 100%;
     }
 
     .button-full {
@@ -34,7 +35,15 @@ sheet.replaceSync(/*css*/`
         background-color: #5b52ff;
     }
 
-    button:focus {
+    @media (max-width: 500px) {
+        .button-sm-icon-only #buttonLabel {
+            display: none;
+        }
+
+        .button-sm-size-full {
+            flex: 1 0 100%;
+            margin-top: 1rem;
+        }
     }
 `);
 
@@ -44,12 +53,14 @@ export class AppButton extends HTMLElement {
     get markup() {
         const _class = this.size === "full" ? " button-full " : "";
         const _variant = this.variant === 'secondary' ? ' button-secondary ' : "";
-        
+        const _smMode = this.smLabelMode === 'iconOnly' ? 'button-sm-icon-only' : ""
+        const _smSize = this.smSize === 'full' ? 'button-sm-size-full' : ""
+
         const iconEl = this.getIconElement(this.icon);
         return /*html*/`
-            <button id="${this.id}" class="${_class} ${_variant}">
+            <button id="${this.id}" class="${_class} ${_variant} ${_smMode} ${_smSize}">
                 ${iconEl ?? ''}
-                <span class="truncate">${this.label}</span>
+                <span id="buttonLabel" class="truncate">${this.label}</span>
             </button>
         `;
     }
@@ -57,7 +68,6 @@ export class AppButton extends HTMLElement {
     constructor() {
         super();
         this.shadow.adoptedStyleSheets = [sheet]
-        document.create
         this.shadow.innerHTML = this.markup;
     }
 
@@ -66,6 +76,7 @@ export class AppButton extends HTMLElement {
             return null;
 
         const spanEl = document.createElement('span');
+        spanEl.id = 'buttonIcon';
         spanEl.style.padding = '0rem .5rem 0rem 0.2rem' 
         spanEl.innerText = iconName;
         return spanEl.outerHTML;
@@ -89,6 +100,14 @@ export class AppButton extends HTMLElement {
 
     get size() {
         return this.getAttribute('size') || '';
+    }
+
+    get smLabelMode() {
+        return this.getAttribute("smLabelMode") || '';
+    }
+
+    get smSize() {
+        return this.getAttribute("smSize") || '';
     }
 
 }

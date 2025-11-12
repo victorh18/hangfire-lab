@@ -6,7 +6,7 @@ apiScript.src = "https://www.youtube.com/iframe_api";
 var iframeContainer = document.getElementsByTagName("main")[0];
 iframeContainer.appendChild(apiScript);
 
-const IFRAME_WIDTH = 640;
+const IFRAME_WIDTH = '100%';
 
 // Once the API code downloads, this gets executed:
 var player;
@@ -45,8 +45,10 @@ function pauseVideo() {
 }
 
 function playSection() {
-    var startTime = Number(txtStartTime.value);
-    var endTime = Number(txtEndTime.value);
+    var startTime = Number(txtStartTime.timeValueInSeconds);
+    var endTime = Number(txtEndTime.timeValueInSeconds);
+
+    console.log({startTime, endTime})
 
     var difference = endTime - startTime
 

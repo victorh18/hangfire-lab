@@ -13,6 +13,7 @@ sheet.replaceSync(/*css*/`
             padding: .5rem;
             border-radius: .5rem;
             padding-right: 4rem;
+            width: fit-content;
 
             -webkit-appearance: none; /* For Webkit browsers like Chrome, Safari */
             -moz-appearance: none;    /* For Firefox */
