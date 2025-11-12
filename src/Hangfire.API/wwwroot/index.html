@@ -11,7 +11,8 @@
     <link as="style"
         href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Space+Grotesk%3Awght%40400%3B500%3B700"
         onload="this.rel='stylesheet'" rel="stylesheet" />
-    <style src="./styles.css"></style>
+    <link href="./styles.css" rel="stylesheet">
+    </link>
     <style type="text/tailwindcss">
         :root {
       --primary-color: #5b52ff;
@@ -30,19 +31,36 @@
   </style>
 </head>
 
+
+
 <body class="bg-[var(--bg-color)] text-[var(--text-color)] flex flex-1 flex-col items-center">
-    <header class="flex border-b-2 border-b-blue-100/20 w-full px-4 py-4">
-        <div class="flex-1/3">
-            <p>MemeExtractor</p>
+    <header
+        class="flex flex-row-reverse justify-end gap-4 border-b-2 border-b-blue-100/20 w-full px-4 py-4 sm:flex-row ">
+        <div class="w-1/3">
+            <p class="font-regular text-xl">MemeExtractor</p>
         </div>
-        <app-navbar class="flex-1">
+        <app-navbar class="w-1/3 hidden sm:block">
             <a>My Gifs</a>
             <a>My History</a>
             <a>Explore</a>
         </app-navbar>
 
-        <div class="flex-1/3 flex justify-end">
-            <span class="material-symbols-outlined">menu</span>
+        <button id="btnToggleDrawer" class="sm:hidden">
+            <div class="flex-1/3 flex justify-end">
+                <span class="material-symbols-outlined">menu</span>
+            </div>
+        </button>
+        <div class="w-1/3 hidden sm:block"></div>
+        <div id="drawer"
+            class="fixed top-0 left-[-250px] w-[250px] h-dvh bg-[#111827] z-20 flex flex-col text-2xl gap-4 p-4">
+            <p class="text-4xl">Meme Extractor</p>
+            <hr class="my-4">
+            <a class="hover:text-[#00b3ff] hover:cursor-pointer hover:font-bold">My Gifs</a>
+            <a class="hover:text-[#00b3ff] hover:cursor-pointer hover:font-bold">My History</a>
+            <a class="hover:text-[#00b3ff] hover:cursor-pointer hover:font-bold">Explore</a>
+        </div>
+        <div id="backdrop" class="fixed hidden h-dvh top-0 left-0 w-screen bg-gray-100 opacity-30 z-10">
+
         </div>
     </header>
     <main class="flex flex-col gap-4 p-4 w-full min-w-[100px] max-w-[750px] sm:min-w-[250px] sm:w-[85%] sm:mx-1/12">
@@ -71,15 +89,8 @@
                 <option value="0">Audio</option>
                 <option value="1">GIF</option>
             </dropdown-select>
-            <app-button 
-                label="Play" 
-                icon="▶" 
-                variant="secondary" 
-                id="btnPlay" 
-                smLabelMode="iconOnly" 
-                smSize="full"
-                class="flex flex-1 sm:grow-0"
-            ></app-button>
+            <app-button label="Play" icon="▶" variant="secondary" id="btnPlay"  smSize="full"
+                class="flex flex-1 sm:grow-0"></app-button>
 
         </div>
         <hr />
@@ -92,9 +103,7 @@
             </div>
         </div>
     </main>
-    <footer>
-        <p>&copy; 2025 Meme Extractor</p>
-    </footer>
+
     <script src="./script.js"></script>
     <script src="./initializeYoutube.js"></script>
     <script type="module" src="./index.js"></script>
